@@ -27,163 +27,14 @@ class ChatInputRow extends StatelessWidget {
       return const SizedBox.shrink();
     }
     const height = 48.0;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: controller.selectMode
-          ? <Widget>[
-              if (controller.selectedEvents
-                  .every((event) => event.status == EventStatus.error))
-                SizedBox(
-                  height: height,
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: theme.colorScheme.error,
-                    ),
-                    onPressed: controller.deleteErrorEventsAction,
-                    child: Row(
-                      children: <Widget>[
-                        const Icon(Icons.delete),
-                        Text(L10n.of(context)!.delete),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                SizedBox(
-                  height: height,
-                  child: TextButton(
-                    onPressed: controller.forwardEventsAction,
-                    child: Row(
-                      children: <Widget>[
-                        const Icon(Icons.keyboard_arrow_left_outlined),
-                        Text(L10n.of(context)!.forward),
-                      ],
-                    ),
-                  ),
-                ),
-              controller.selectedEvents.length == 1
-                  ? controller.selectedEvents.first
-                          .getDisplayEvent(controller.timeline!)
-                          .status
-                          .isSent
-                      ? SizedBox(
-                          height: height,
-                          child: TextButton(
-                            onPressed: controller.replyAction,
-                            child: Row(
-                              children: <Widget>[
-                                Text(L10n.of(context)!.reply),
-                                const Icon(Icons.keyboard_arrow_right),
-                              ],
-                            ),
-                          ),
-                        )
-                      : SizedBox(
-                          height: height,
-                          child: TextButton(
-                            onPressed: controller.sendAgainAction,
-                            child: Row(
-                              children: <Widget>[
-                                Text(L10n.of(context)!.tryToSendAgain),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.send_outlined, size: 16),
-                              ],
-                            ),
-                          ),
-                        )
-                  : const SizedBox.shrink(),
-            ]
-          : <Widget>[
-              const SizedBox(width: 4),
-              KeyBoardShortcuts(
-                keysToPress: {
-                  LogicalKeyboardKey.altLeft,
-                  LogicalKeyboardKey.keyA,
-                },
-                onKeysPressed: () =>
-                    controller.onAddPopupMenuButtonSelected('file'),
-                helpLabel: L10n.of(context)!.sendFile,
-                child: AnimatedContainer(
-                  duration: FluffyThemes.animationDuration,
-                  curve: FluffyThemes.animationCurve,
-                  height: height,
-                  width: controller.sendController.text.isEmpty ? height : 0,
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.hardEdge,
-                  decoration: const BoxDecoration(),
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.add_outlined),
-                    onSelected: controller.onAddPopupMenuButtonSelected,
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        value: 'file',
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            child: Icon(Icons.attachment_outlined),
-                          ),
-                          title: Text(L10n.of(context)!.sendFile),
-                          contentPadding: const EdgeInsets.all(0),
-                        ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'image',
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            child: Icon(Icons.image_outlined),
-                          ),
-                          title: Text(L10n.of(context)!.sendImage),
-                          contentPadding: const EdgeInsets.all(0),
-                        ),
-                      ),
-                      if (PlatformInfos.isMobile)
-                        PopupMenuItem<String>(
-                          value: 'camera',
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: Colors.purple,
-                              foregroundColor: Colors.white,
-                              child: Icon(Icons.camera_alt_outlined),
-                            ),
-                            title: Text(L10n.of(context)!.openCamera),
-                            contentPadding: const EdgeInsets.all(0),
-                          ),
-                        ),
-                      if (PlatformInfos.isMobile)
-                        PopupMenuItem<String>(
-                          value: 'camera-video',
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              child: Icon(Icons.videocam_outlined),
-                            ),
-                            title: Text(L10n.of(context)!.openVideoCamera),
-                            contentPadding: const EdgeInsets.all(0),
-                          ),
-                        ),
-                      if (PlatformInfos.isMobile)
-                        PopupMenuItem<String>(
-                          value: 'location',
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: Colors.brown,
-                              foregroundColor: Colors.white,
-                              child: Icon(Icons.gps_fixed_outlined),
-                            ),
-                            title: Text(L10n.of(context)!.shareLocation),
-                            contentPadding: const EdgeInsets.all(0),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+      children: [
+        // Left side: Emoji button and input field
+        Expanded(
+          child: Row(
+            children: [
               Container(
                 height: height,
                 width: height,
@@ -199,10 +50,10 @@ class ChatInputRow extends StatelessWidget {
                     tooltip: L10n.of(context)!.emojis,
                     icon: PageTransitionSwitcher(
                       transitionBuilder: (
-                        Widget child,
-                        Animation<double> primaryAnimation,
-                        Animation<double> secondaryAnimation,
-                      ) {
+                          Widget child,
+                          Animation<double> primaryAnimation,
+                          Animation<double> secondaryAnimation,
+                          ) {
                         return SharedAxisTransition(
                           animation: primaryAnimation,
                           secondaryAnimation: secondaryAnimation,
@@ -222,6 +73,37 @@ class ChatInputRow extends StatelessWidget {
                   ),
                 ),
               ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0.0), // Reduce horizontal padding
+                  child: InputBar(
+                    room: controller.room,
+                    minLines: 1,
+                    maxLines: 8,
+                    autofocus: !PlatformInfos.isMobile,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction:
+                    AppConfig.sendOnEnter == true && PlatformInfos.isMobile
+                        ? TextInputAction.send
+                        : null,
+                    onSubmitted: controller.onInputBarSubmitted,
+                    onSubmitImage: controller.sendImageFromClipBoard,
+                    focusNode: controller.inputFocus,
+                    controller: controller.sendController,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 0.0,
+                        vertical: 6.0,
+                      ),
+                      hintText: L10n.of(context)!.writeAMessage,
+                      hintMaxLines: 1,
+                      border: InputBorder.none, // Remove border to eliminate gray container
+                      filled: false,
+                    ),
+                    onChanged: controller.onInputBarChanged,
+                  ),
+                ),
+              ),
               if (Matrix.of(context).isMultiAccount &&
                   Matrix.of(context).hasComplexBundles &&
                   Matrix.of(context).currentBundle!.length > 1)
@@ -231,72 +113,120 @@ class ChatInputRow extends StatelessWidget {
                   alignment: Alignment.center,
                   child: _ChatAccountPicker(controller),
                 ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 0.0),
-                  child: InputBar(
-                    room: controller.room,
-                    minLines: 1,
-                    maxLines: 8,
-                    autofocus: !PlatformInfos.isMobile,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction:
-                        AppConfig.sendOnEnter == true && PlatformInfos.isMobile
-                            ? TextInputAction.send
-                            : null,
-                    onSubmitted: controller.onInputBarSubmitted,
-                    onSubmitImage: controller.sendImageFromClipBoard,
-                    focusNode: controller.inputFocus,
-                    controller: controller.sendController,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.only(
-                        left: 6.0,
-                        right: 6.0,
-                        bottom: 6.0,
-                        top: 3.0,
+            ],
+          ),
+        ),
+        // Right side: Plus button and send/record button
+        SizedBox(
+          height: height,
+          child: Row(
+            children: [
+              // Plus button
+              PopupMenuButton<String>(
+                icon: Icon(Icons.add_outlined),
+                onSelected: controller.onAddPopupMenuButtonSelected,
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'file',
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        child: Icon(Icons.attachment_outlined),
                       ),
-                      hintText: L10n.of(context)!.writeAMessage,
-                      hintMaxLines: 1,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      filled: false,
+                      title: Text(L10n.of(context)!.sendFile),
+                      contentPadding: const EdgeInsets.all(0),
                     ),
-                    onChanged: controller.onInputBarChanged,
                   ),
-                ),
+                  PopupMenuItem<String>(
+                    value: 'image',
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        child: Icon(Icons.image_outlined),
+                      ),
+                      title: Text(L10n.of(context)!.sendImage),
+                      contentPadding: const EdgeInsets.all(0),
+                    ),
+                  ),
+                  if (PlatformInfos.isMobile)
+                    PopupMenuItem<String>(
+                      value: 'camera',
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          child: Icon(Icons.camera_alt_outlined),
+                        ),
+                        title: Text(L10n.of(context)!.openCamera),
+                        contentPadding: const EdgeInsets.all(0),
+                      ),
+                    ),
+                  if (PlatformInfos.isMobile)
+                    PopupMenuItem<String>(
+                      value: 'camera-video',
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          child: Icon(Icons.videocam_outlined),
+                        ),
+                        title: Text(L10n.of(context)!.openVideoCamera),
+                        contentPadding: const EdgeInsets.all(0),
+                      ),
+                    ),
+                  if (PlatformInfos.isMobile)
+                    PopupMenuItem<String>(
+                      value: 'location',
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Colors.brown,
+                          foregroundColor: Colors.white,
+                          child: Icon(Icons.gps_fixed_outlined),
+                        ),
+                        title: Text(L10n.of(context)!.shareLocation),
+                        contentPadding: const EdgeInsets.all(0),
+                      ),
+                    ),
+                ],
               ),
+              // Send/Record button
               Container(
                 height: height,
                 width: height,
                 alignment: Alignment.center,
                 child: PlatformInfos.platformCanRecord &&
-                        controller.sendController.text.isEmpty
+                    controller.sendController.text.isEmpty
                     ? FloatingActionButton.small(
-                        tooltip: L10n.of(context)!.voiceMessage,
-                        onPressed: controller.voiceMessageAction,
-                        elevation: 0,
-                        heroTag: null,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(height),
-                        ),
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        child: const Icon(Icons.mic_none_outlined),
-                      )
+                  tooltip: L10n.of(context)!.voiceMessage,
+                  onPressed: controller.voiceMessageAction,
+                  elevation: 0,
+                  heroTag: null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(height),
+                  ),
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  child: const Icon(Icons.mic_none_outlined),
+                )
                     : FloatingActionButton.small(
-                        tooltip: L10n.of(context)!.send,
-                        onPressed: controller.send,
-                        elevation: 0,
-                        heroTag: null,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(height),
-                        ),
-                        backgroundColor: theme.colorScheme.onPrimaryContainer,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        child: const Icon(Icons.send_outlined),
-                      ),
+                  tooltip: L10n.of(context)!.send,
+                  onPressed: controller.send,
+                  elevation: 0,
+                  heroTag: null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(height),
+                  ),
+                  backgroundColor: theme.colorScheme.onPrimaryContainer,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  child: const Icon(Icons.send_outlined),
+                ),
               ),
             ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -329,22 +259,22 @@ class _ChatAccountPicker extends StatelessWidget {
           itemBuilder: (BuildContext context) => clients
               .map(
                 (client) => PopupMenuItem<String>(
-                  value: client!.userID,
-                  child: FutureBuilder<Profile>(
-                    future: client.fetchOwnProfile(),
-                    builder: (context, snapshot) => ListTile(
-                      leading: Avatar(
-                        mxContent: snapshot.data?.avatarUrl,
-                        name: snapshot.data?.displayName ??
-                            client.userID!.localpart,
-                        size: 20,
-                      ),
-                      title: Text(snapshot.data?.displayName ?? client.userID!),
-                      contentPadding: const EdgeInsets.all(0),
-                    ),
+              value: client!.userID,
+              child: FutureBuilder<Profile>(
+                future: client.fetchOwnProfile(),
+                builder: (context, snapshot) => ListTile(
+                  leading: Avatar(
+                    mxContent: snapshot.data?.avatarUrl,
+                    name: snapshot.data?.displayName ??
+                        client.userID!.localpart,
+                    size: 20,
                   ),
+                  title: Text(snapshot.data?.displayName ?? client.userID!),
+                  contentPadding: const EdgeInsets.all(0),
                 ),
-              )
+              ),
+            ),
+          )
               .toList(),
           child: Avatar(
             mxContent: snapshot.data?.avatarUrl,
